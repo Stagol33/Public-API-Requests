@@ -1,5 +1,6 @@
 // Global variables
-let employees = [];
+let employees = [];            // All employees from API
+let filteredEmployees = [];    // Currently displayed employees after filtering
 let currentEmployeeIndex = 0;
 
 /**
@@ -12,7 +13,8 @@ async function fetchData() {
         const response = await fetch('https://randomuser.me/api/?results=12&nat=us,gb&format=json');
         const data = await response.json();
         employees = data.results;
-        displayEmployees(employees);
+        filteredEmployees = [...employees]; // Initialize filtered array with all employees
+        displayEmployees(filteredEmployees);
     } catch (error) {
         console.error('Error fetching data:', error);
         document.querySelector('.gallery').innerHTML = '<h3>Error loading users. Please refresh the page.</h3>';
@@ -55,11 +57,11 @@ function displayEmployees(employeeArray) {
 
 /**
  * Display a modal with detailed employee information
- * @param {Number} index - Index of the employee in the employees array
+ * @param {Number} index - Index of the employee in the filteredEmployees array
  */
 function displayModal(index) {
     currentEmployeeIndex = index;
-    const employee = employees[index];
+    const employee = filteredEmployees[index];
     
     // Format the date of birth from ISO string to MM/DD/YYYY
     const dob = new Date(employee.dob.date);
@@ -97,16 +99,16 @@ function displayModal(index) {
         document.body.removeChild(modalContainer);
     });
     
-    // Previous button functionality with wrapping
+    // Previous button functionality with wrapping - now using filteredEmployees
     document.getElementById('modal-prev').addEventListener('click', () => {
         document.body.removeChild(modalContainer);
-        displayModal(currentEmployeeIndex > 0 ? currentEmployeeIndex - 1 : employees.length - 1);
+        displayModal(currentEmployeeIndex > 0 ? currentEmployeeIndex - 1 : filteredEmployees.length - 1);
     });
     
-    // Next button functionality with wrapping
+    // Next button functionality with wrapping - now using filteredEmployees
     document.getElementById('modal-next').addEventListener('click', () => {
         document.body.removeChild(modalContainer);
-        displayModal(currentEmployeeIndex < employees.length - 1 ? currentEmployeeIndex + 1 : 0);
+        displayModal(currentEmployeeIndex < filteredEmployees.length - 1 ? currentEmployeeIndex + 1 : 0);
     });
 }
 
@@ -145,7 +147,8 @@ function setupSearch() {
  * @param {String} searchTerm - The term to search for in employee names
  */
 function performSearch(searchTerm) {
-    const filteredEmployees = employees.filter(employee => {
+    // Update the filteredEmployees array
+    filteredEmployees = employees.filter(employee => {
         const fullName = `${employee.name.first} ${employee.name.last}`.toLowerCase();
         return fullName.includes(searchTerm.toLowerCase());
     });
